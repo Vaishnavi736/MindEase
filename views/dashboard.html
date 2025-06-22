@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MindEase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #4a5568;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mood-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mood-btn {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+        
+        .mood-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .mood-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .journal-form textarea {
+            width: 100%;
+            height: 120px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 1rem;
+        }
+        
+        .journal-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .history {
+            margin-top: 1rem;
+        }
+        
+        .history-item {
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .history-date {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .relaxation-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .tool {
+            padding: 1.5rem;
+            background: #f7fafc;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tool:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .tool-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .close:hover {
+            color: #4a5568;
+        }
+
+        /* Breathing Exercise */
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+            transition: all 4s ease-in-out;
+            animation: none;
+        }
+
+        .breathing-circle.inhale {
+            animation: inhale 4s ease-in-out;
+        }
+
+        .breathing-circle.hold1 {
+            animation: hold 4s ease-in-out;
+        }
+
+        .breathing-circle.exhale {
+            animation: exhale 4s ease-in-out;
+        }
+
+        .breathing-circle.hold2 {
+            animation: hold 4s ease-in-out;
+        }
+
+        @keyframes inhale {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.3); }
+        }
+
+        @keyframes exhale {
+            0% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes hold {
+            0% { transform: scale(1.3); }
+            100% { transform: scale(1.3); }
+        }
+
+        .breathing-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .breathing-instructions {
+            text-align: center;
+            margin: 1rem 0;
+            color: #718096;
+        }
+
+        /* Meditation Timer */
+        .meditation-timer {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+
+        .meditation-instructions {
+            text-align: left;
+            margin: 1rem 0;
+            color: #718096;
+        }
+
+        .meditation-instructions p {
+            margin: 0.5rem 0;
+        }
+
+        /* Tips Container */
+        .tips-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .tip-category {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .tip-category h3 {
+            color: #4a5568;
+            margin-bottom: 1rem;
+        }
+
+        .tip-category ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tip-category li {
+            padding: 0.5rem 0;
+            color: #718096;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tip-category li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 MindEase Dashboard</h1>
+        <div class="user-info">
+            <span id="userName">Welcome!</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="success" class="success"></div>
+        
+        <div class="grid">
+            <!-- Mood Tracking -->
+            <div class="card">
+                <h2>😊 How are you feeling today?</h2>
+                <div class="mood-buttons">
+                    <button class="mood-btn" data-mood="Happy">😊</button>
+                    <button class="mood-btn" data-mood="Calm">😌</button>
+                    <button class="mood-btn" data-mood="Neutral">😐</button>
+                    <button class="mood-btn" data-mood="Sad">😔</button>
+                    <button class="mood-btn" data-mood="Anxious">😰</button>
+                    <button class="mood-btn" data-mood="Angry">😠</button>
+                </div>
+                <button id="saveMood" class="btn">Save Mood</button>
+                
+                <div class="history">
+                    <h3>Recent Moods</h3>
+                    <div id="moodHistory"></div>
+                </div>
+            </div>
+
+            <!-- Journal -->
+            <div class="card">
+                <h2>📝 Daily Journal</h2>
+                <form class="journal-form" id="journalForm">
+                    <textarea placeholder="Write about your day, thoughts, or feelings..." required></textarea>
+                    <button type="submit" class="btn">Save Entry</button>
+                </form>
+                
+                <div class="history">
+                    <h3>Recent Entries</h3>
+                    <div id="journalHistory"></div>
+                </div>
+            </div>
+
+            <!-- Relaxation Tools -->
+            <div class="card">
+                <h2>🧘 Relaxation Tools</h2>
+                <div class="relaxation-tools">
+                    <div class="tool" onclick="startBreathing()">
+                        <div class="tool-icon">🫁</div>
+                        <h3>Breathing Exercise</h3>
+                        <p>4-4-4-4 breathing technique</p>
+                    </div>
+                    <div class="tool" onclick="startMeditation()">
+                        <div class="tool-icon">🧘‍♀️</div>
+                        <h3>Quick Meditation</h3>
+                        <p>5-minute mindfulness session</p>
+                    </div>
+                    <div class="tool" onclick="showTips()">
+                        <div class="tool-icon">💡</div>
+                        <h3>Mental Health Tips</h3>
+                        <p>Daily wellness advice</p>
+                    </div>
+                </div>
+                
+                <!-- Breathing Exercise Modal -->
+                <div id="breathingModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeBreathing()">&times;</span>
+                        <h2>🫁 Breathing Exercise</h2>
+                        <div class="breathing-circle" id="breathingCircle">
+                            <div class="breathing-text" id="breathingText">Get Ready</div>
+                        </div>
+                        <div class="breathing-instructions">
+                            <p>Follow the circle: Inhale → Hold → Exhale → Hold</p>
+                            <p>Repeat for 10 cycles</p>
+                        </div>
+                        <button class="btn" onclick="closeBreathing()">Stop Exercise</button>
+                    </div>
+                </div>
+
+                <!-- Meditation Modal -->
+                <div id="meditationModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeMeditation()">&times;</span>
+                        <h2>🧘‍♀️ Meditation Session</h2>
+                        <div class="meditation-timer">
+                            <div class="timer-display" id="timerDisplay">5:00</div>
+                            <div class="meditation-instructions">
+                                <p>1. Find a comfortable position</p>
+                                <p>2. Close your eyes</p>
+                                <p>3. Focus on your breath</p>
+                                <p>4. Let thoughts pass by without judgment</p>
+                            </div>
+                        </div>
+                        <button class="btn" id="meditationBtn" onclick="toggleMeditation()">Start Meditation</button>
+                    </div>
+                </div>
+
+                <!-- Tips Modal -->
+                <div id="tipsModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeTips()">&times;</span>
+                        <h2>💡 Mental Health Tips</h2>
+                        <div class="tips-container">
+                            <div class="tip-category">
+                                <h3>🌅 Daily Wellness</h3>
+                                <ul>
+                                    <li>Get 7-9 hours of quality sleep</li>
+                                    <li>Start your day with 10 minutes of stretching</li>
+                                    <li>Stay hydrated - drink 8 glasses of water</li>
+                                    <li>Take regular breaks from screens</li>
+                                </ul>
+                            </div>
+                            <div class="tip-category">
+                                <h3>🏃‍♀️ Physical Health</h3>
+                                <ul>
+                                    <li>Exercise for at least 30 minutes daily</li>
+                                    <li>Go for a walk in nature</li>
+                                    <li>Practice deep breathing exercises</li>
+                                    <li>Maintain a regular sleep schedule</li>
+                                </ul>
+                            </div>
+                            <div class="tip-category">
+                                <h3>🤝 Social Connection</h3>
+                                <ul>
+                                    <li>Stay connected with friends and family</li>
+                                    <li>Join a hobby group or club</li>
+                                    <li>Practice active listening</li>
+                                    <li>Express gratitude to others</li>
+                                </ul>
+                            </div>
+                            <div class="tip-category">
+                                <h3>🧠 Mental Practices</h3>
+                                <ul>
+                                    <li>Practice mindfulness or meditation</li>
+                                    <li>Keep a gratitude journal</li>
+                                    <li>Learn to say "no" when needed</li>
+                                    <li>Seek professional help if struggling</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedMood = null;
+        let userData = null;
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user-data');
+                const data = await response.json();
+                
+                if (data.error) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                userData = data;
+                document.getElementById('userName').textContent = `Welcome, ${data.userName}!`;
+                displayMoodHistory(data.moods);
+                displayJournalHistory(data.journals);
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Mood tracking
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedMood = btn.dataset.mood;
+            });
+        });
+
+        document.getElementById('saveMood').addEventListener('click', async () => {
+            if (!selectedMood) {
+                alert('Please select a mood first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/mood', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mood: selectedMood })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccess('Mood saved successfully!');
+                    loadUserData();
+                    selectedMood = null;
+                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                }
+            } catch (error) {
+                console.error('Error saving mood:', error);
+            }
+        });
+
+        // Journal
+        document.getElementById('journalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const textarea = e.target.querySelector('textarea');
+            const entry = textarea.value.trim();
+            
+            if (!entry) return;
+
+            try {
+                const response = await fetch('/journal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ entry })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showSuccess('Journal entry saved!');
+                    textarea.value = '';
+                    loadUserData();
+                }
+            } catch (error) {
+                console.error('Error saving journal:', error);
+            }
+        });
+
+        function displayMoodHistory(moods) {
+            const container = document.getElementById('moodHistory');
+            container.innerHTML = '';
+            
+            moods.forEach(mood => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div class="history-date">${new Date(mood.date).toLocaleDateString()}</div>
+                    <div>${mood.mood}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function displayJournalHistory(journals) {
+            const container = document.getElementById('journalHistory');
+            container.innerHTML = '';
+            
+            journals.forEach(journal => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div class="history-date">${new Date(journal.date).toLocaleDateString()}</div>
+                    <div>${journal.entry.substring(0, 100)}${journal.entry.length > 100 ? '...' : ''}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Relaxation tools
+        function startBreathing() {
+            document.getElementById('breathingModal').style.display = 'block';
+            startBreathingExercise();
+        }
+
+        function startMeditation() {
+            document.getElementById('meditationModal').style.display = 'block';
+        }
+
+        function showTips() {
+            document.getElementById('tipsModal').style.display = 'block';
+        }
+
+        function closeBreathing() {
+            document.getElementById('breathingModal').style.display = 'none';
+            stopBreathingExercise();
+        }
+
+        function closeMeditation() {
+            document.getElementById('meditationModal').style.display = 'none';
+            stopMeditation();
+        }
+
+        function closeTips() {
+            document.getElementById('tipsModal').style.display = 'none';
+        }
+
+        // Breathing Exercise Variables
+        let breathingInterval;
+        let breathingCycle = 0;
+        const totalCycles = 10;
+
+        function startBreathingExercise() {
+            breathingCycle = 0;
+            const circle = document.getElementById('breathingCircle');
+            const text = document.getElementById('breathingText');
+            
+            function breathingStep() {
+                if (breathingCycle >= totalCycles) {
+                    text.textContent = 'Exercise Complete!';
+                    circle.className = 'breathing-circle';
+                    return;
+                }
+
+                const step = breathingCycle % 4;
+                
+                switch(step) {
+                    case 0: // Inhale
+                        text.textContent = 'Inhale';
+                        circle.className = 'breathing-circle inhale';
+                        break;
+                    case 1: // Hold
+                        text.textContent = 'Hold';
+                        circle.className = 'breathing-circle hold1';
+                        break;
+                    case 2: // Exhale
+                        text.textContent = 'Exhale';
+                        circle.className = 'breathing-circle exhale';
+                        break;
+                    case 3: // Hold
+                        text.textContent = 'Hold';
+                        circle.className = 'breathing-circle hold2';
+                        break;
+                }
+                
+                breathingCycle++;
+            }
+
+            breathingStep();
+            breathingInterval = setInterval(breathingStep, 4000); // 4 seconds per step
+        }
+
+        function stopBreathingExercise() {
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+            }
+            const circle = document.getElementById('breathingCircle');
+            const text = document.getElementById('breathingText');
+            circle.className = 'breathing-circle';
+            text.textContent = 'Get Ready';
+        }
+
+        // Meditation Timer Variables
+        let meditationInterval;
+        let meditationTime = 300; // 5 minutes in seconds
+        let isMeditationRunning = false;
+
+        function toggleMeditation() {
+            if (isMeditationRunning) {
+                stopMeditation();
+            } else {
+                startMeditationTimer();
+            }
+        }
+
+        function startMeditationTimer() {
+            isMeditationRunning = true;
+            const btn = document.getElementById('meditationBtn');
+            const timer = document.getElementById('timerDisplay');
+            
+            btn.textContent = 'Pause Meditation';
+            
+            meditationInterval = setInterval(() => {
+                meditationTime--;
+                
+                const minutes = Math.floor(meditationTime / 60);
+                const seconds = meditationTime % 60;
+                timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (meditationTime <= 0) {
+                    stopMeditation();
+                    timer.textContent = 'Session Complete!';
+                    btn.textContent = 'Start Meditation';
+                    setTimeout(() => {
+                        timer.textContent = '5:00';
+                        meditationTime = 300;
+                    }, 3000);
+                }
+            }, 1000);
+        }
+
+        function stopMeditation() {
+            isMeditationRunning = false;
+            if (meditationInterval) {
+                clearInterval(meditationInterval);
+                meditationInterval = null;
+            }
+            const btn = document.getElementById('meditationBtn');
+            btn.textContent = 'Start Meditation';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const breathingModal = document.getElementById('breathingModal');
+            const meditationModal = document.getElementById('meditationModal');
+            const tipsModal = document.getElementById('tipsModal');
+            
+            if (event.target === breathingModal) {
+                closeBreathing();
+            }
+            if (event.target === meditationModal) {
+                closeMeditation();
+            }
+            if (event.target === tipsModal) {
+                closeTips();
+            }
+        }
+
+        // Load data when page loads
+        loadUserData();
+    </script>
+</body>
+</html> 
